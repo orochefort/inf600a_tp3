@@ -1,0 +1,6 @@
+= taux
+
+Describe your project here
+
+:include:taux.rdoc
+

@@ -27,6 +27,23 @@ class App
   arg_name 'The name of the argument'
   flag [:f,:flagname]
 
+  desc 'Ajoute une devise et ses differentes devises de conversion a la bd'
+  arg_name 'devise devise_conversion'
+  command :ajouter do |c|
+    c.desc 'Si devise existe deja dans la bd, ajoute devise_conversion a la liste existante des devises de conversion'
+    c.switch [:a,:append], :negatable => false
+
+    c.action do |global_options,options,args|
+
+      # Your command logic here
+
+      # If you have any errors, just raise them
+      # raise "that command made no sense"
+
+      puts "ajouter command ran"
+    end
+  end
+
   pre do |global,command,options,args|
     # Pre logic here
     # Return true to proceed; false to abort and not call the

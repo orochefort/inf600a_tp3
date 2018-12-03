@@ -1,4 +1,6 @@
-require 'taux/version.rb'
+require_relative 'dbc'
 
-# Add requires for other files you add to your project here, so
-# you just need to require this one file in your bin file
+require_relative 'taux/devise'
+require_relative 'taux/devise_conversion'
+require_relative 'taux/motifs'
+require_relative 'taux/version'

@@ -9,6 +9,23 @@ rescue LoadError
   exit 64
 end
 
+# Des alias, pour alleger le code.
+GT = GestionTaux
+ENTREPOT = GestionTaux::EntrepotDevises
+
+# Attributs lies au type de BD utilise.
+BD = BDTexte
+
+# BD textuelle style CSV.
+FORMAT_BD_TEXTE = :csv
+SEPARATEUR_BD_TEXTE = ';'
+DEPOT_DEFAUT = '.taux.txt' # Fichier par defaut pour depot.
+
+# Injection des dependances pour la BD textuelle.
+BD.config(FORMAT_BD_TEXTE, GestionTaux::Devise,
+          separateur: SEPARATEUR_BD_TEXTE,
+          exception_a_signaler: GestionTaux::Exception)
+
 class App
   extend GLI::App
 

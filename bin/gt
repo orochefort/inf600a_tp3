@@ -54,9 +54,9 @@ BD.config(FORMAT_BD_TEXTE, GestionTaux::Devise,
     c.switch [:a,:append], :negatable => false
 
     c.action do |global_options,options,args|
-      dev = new Devise()
-      dev = dev.new_de_csv("CAD;USD:0.75364;EUR:0.66268;GBP:0.58735")
-      puts dev
+      #dev = new Devise()
+      #dev = dev.new_de_csv("CAD;USD:0.75364;EUR:0.66268;GBP:0.58735")
+      #puts dev
 
       # Your command logic here
 

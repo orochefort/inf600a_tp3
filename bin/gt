@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+#-*- ruby -*- # Pour etre en mode Ruby dans emacs
 require 'gli'
 require 'fileutils'
 #require '../lib/bd_texte'
@@ -29,7 +30,7 @@ BD.config(FORMAT_BD_TEXTE, GestionTaux::Devise,
           separateur: SEPARATEUR_BD_TEXTE,
           exception_a_signaler: GestionTaux::Exception)
 
-#class App
+class App
   extend GLI::App
 
   program_desc 'Describe your application here'
@@ -52,16 +53,12 @@ BD.config(FORMAT_BD_TEXTE, GestionTaux::Devise,
   command :ajouter do |c|
     c.desc 'Si devise existe deja dans la bd, ajoute devise_conversion a la liste existante des devises de conversion'
     c.switch [:a,:append], :negatable => false
-
+    devise = "CAN"
+    devise_conversion = "USD:0.75364;EUR:0.66268;GBP:0.58735"
+    ENTREPOT.ajouter(devise, devise_conversion)
+    
     c.action do |global_options,options,args|
-      #dev = new Devise()
-      #dev = dev.new_de_csv("CAD;USD:0.75364;EUR:0.66268;GBP:0.58735")
-      #puts dev
-
-      # Your command logic here
-
-      # If you have any errors, just raise them
-      # raise "that command made no sense"
+           
 
       puts "ajouter command ran"
     end
@@ -87,6 +84,6 @@ BD.config(FORMAT_BD_TEXTE, GestionTaux::Devise,
     # return false to skip default error handling
     true
   end
-#end
+end
 
 exit App.run(ARGV)

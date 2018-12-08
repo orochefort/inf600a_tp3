@@ -59,6 +59,7 @@ module GestionTaux
     #         conditions decrites dans Devise.new etaient satisfaites
     #
     def self.ajouter(a_nom, a_devises_conversion)
+        puts "#{a_nom} - #{a_devises_conversion}"
         @les_taux << Devise.new(a_nom, a_devises_conversion)
     end
 

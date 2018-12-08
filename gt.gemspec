@@ -8,11 +8,10 @@ spec = Gem::Specification.new do |s|
   s.homepage = 'http://your.website.com'
   s.platform = Gem::Platform::RUBY
   s.summary = 'A description of your project'
-  s.files = `git ls-files`.split("
-  ")
+  s.files = `git ls-files`.split("\n")
   s.require_paths << 'lib'
-  s.extra_rdoc_files = ['README.rdoc','gt.rdoc']
-  s.rdoc_options << '--title' << 'gt' << '--main' << 'README.rdoc' << '-ri'
+  #s.extra_rdoc_files = ['README.rdoc','taux.rdoc']
+  s.rdoc_options << '--title' << 'taux' << '--main' << 'README.rdoc' << '-ri'
   s.bindir = 'bin'
   s.executables << 'gt'
 

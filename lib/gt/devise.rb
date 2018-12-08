@@ -1,3 +1,5 @@
+module GestionTaux
+
     require_relative 'motifs'
 
 # Classe representant une devise et ses differentes devises de conversion.
@@ -15,7 +17,7 @@ class Devise
   # @param [String] a_ligne Une entree CSV.
   # @param [String] a_separateur Le caractere separateur dans l'entree CSV.
   #
-  def self.new_de_csv(a_ligne, a_separateur = ';')
+  def self.new_from_csv(a_ligne, a_separateur = ';')
     nom, *devises_conversion = a_ligne.split(a_separateur)
     new(nom, *devises_conversion)
   end
@@ -73,4 +75,5 @@ class Devise
   def to_csv(a_separateur = ';')
     @nom + a_separateur + @devises_conversion.map(&:to_csv).join(a_separateur)
   end
+end
 end

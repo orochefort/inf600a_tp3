@@ -2,10 +2,7 @@
 #-*- ruby -*- # Pour etre en mode Ruby dans emacs
 require 'gli'
 require 'fileutils'
-#require '../lib/bd_texte'
-#require '../lib/taux/version'
 begin # XXX: Remove this begin/rescue before distributing your app
- # require 'taux'
   require 'gt'
 rescue LoadError
   STDERR.puts "In development, you need to use `bundle exec bin/taux` to run your app"
@@ -13,6 +10,9 @@ rescue LoadError
   STDERR.puts "Feel free to remove this message from bin/taux now"
   exit 64
 end
+
+# ---------- Alias et constantes
+
 # Des alias, pour alleger le code.
 GT = GestionTaux
 ENTREPOT = GestionTaux::EntrepotDevises
@@ -30,60 +30,127 @@ BD.config(FORMAT_BD_TEXTE, GestionTaux::Devise,
           separateur: SEPARATEUR_BD_TEXTE,
           exception_a_signaler: GestionTaux::Exception)
 
+# ---------- Specification de l'application avec GLI
+
 class App
   extend GLI::App
 
-  program_desc 'Describe your application here'
+  program_desc 'Un programme pour la gestion de taux de change'
 
   version GT::VERSION
 
   subcommand_option_handling :normal
   arguments :strict
 
-  desc 'Describe some switch here'
-  switch [:s,:switch]
+  desc 'Depot de donnees a utiliser pour les taux'
+  default_value DEPOT_DEFAUT
+  flag :depot
 
-  desc 'Describe some flag here'
-  default_value 'the default'
-  arg_name 'The name of the argument'
-  flag [:f,:flagname]
+  desc 'Utilisation de stdin plutot que le depot'
+  switch [:stdin, :'']
 
-  desc 'Ajoute une devise et ses differentes devises de conversion a la bd'
+  # ---------- Specification des differentes commandes possibles
+
+  # =================================
+  # Commande ajouter
+  #
+  # Arguments: [-a|--append] devise *devises_conversion
+  #
+  # Erreurs:
+  # - Depot invalide (- ne peut pas etre utilise)
+  # - Nom de devise invalide
+  # =================================
+  desc 'Ajoute une devise et ses differentes devises de conversion au depot'
   arg_name 'devise devise_conversion'
-  command :ajouter do |c|
-    c.desc 'Si devise existe deja dans la bd, ajoute devise_conversion a la liste existante des devises de conversion'
-    c.switch [:a,:append], :negatable => false
-    devise = "CAN"
-    devise_conversion = "USD:0.75364;EUR:0.66268;GBP:0.58735"
-    ENTREPOT.ajouter(devise, devise_conversion)
-    
-    c.action do |global_options,options,args|
-           
+  command :ajouter do |ajouter|
+    ajouter.desc 'Si <devise> existe deja dans la bd, ajoute <*devises_conversion> a la liste existante des devises de conversion'
+    ajouter.switch [:a, :append], negatable: false
 
-      puts "ajouter command ran"
+    ajouter.action do |global_options, options, args|
+      devise, *devises_conversion = args
+      ENTREPOT.ajouter(devise, *devises_conversion)
     end
   end
 
-  pre do |global,command,options,args|
-    # Pre logic here
-    # Return true to proceed; false to abort and not call the
-    # chosen command
-    # Use skips_pre before a command to skip this block
-    # on that command only
-    true
+  # =================================
+  # Commande init
+  #
+  # Arguments: [-d|--detruire]
+  #
+  # Erreurs:
+  #  - Le depot existe deja et l'option --detruire n'a pas ete indiquee
+  #  - Argument(s) en trop
+  # =================================
+  desc "Cree une nouvelle base de donnees pour gerer des taux (dans './#{DEPOT_DEFAUT}' si --depot n'est pas specifie)"
+  skips_pre
+  skips_post
+  command :init do |init|
+    init.desc 'Detruit le fichier du depot s\'il existe deja'
+    init.switch [:d, :detruire]
+
+    init.action do |global_options, options, _args|
+      BD.init(global_options[:depot], detruire: options[:detruire])
+    end
   end
 
-  post do |global,command,options,args|
-    # Post logic here
-    # Use skips_post before a command to skip this
-    # block on that command only
+  # ========================================
+  # Methodes pour le traitement des erreurs.
+  # @author Guy Tremblay
+  # ========================================
+
+  def erreur(msg)
+    raise GT::Exception, msg
+  end
+
+  def erreur_trop_arguments(commande, *args)
+    erreur "#{commande}: arguments en trop: #{args.join(' ')}"
+  end
+
+  def erreur_nombre_incorrect_arguments(commande, *args)
+    erreur "#{commande}: nombre incorrect d'arguments: #{args.join(' ')}"
   end
 
   on_error do |exception|
-    # Error logic here
-    # return false to skip default error handling
+    case exception
+    when GLI::MissingRequiredArgumentsException
+      STDERR.puts "*** Erreur: arguments en trop: #{ARGV.join(' ')}"
+    when GLI::UnknownCommandArgument
+      STDERR.puts "*** Erreur: argument ou option de commande invalide: #{ARGV.join(' ')}"
+    when GT::Exception
+      STDERR.puts "*** Erreur: #{exception.message}"
+    else
+      STDERR.puts "*** Oops! Exception signalee durant l'execution de #{$PROGRAM_NAME} ***"
+      STDERR.puts exception.message
+      STDERR.puts exception.inspect
+      STDERR.puts exception.backtrace
+    end
+  end
+
+  # =====================================================
+  # Pre/post hook des commandes et lancement du programme
+  # =====================================================
+
+  COMMANDES_MODIFIANT_DEPOT = [:ajouter, :supprimer]
+
+  pre do |global_options, command, _options, _args|
+    depot = global_options[:stdin] ? '-' : global_options[:depot]
+
+    if COMMANDES_MODIFIANT_DEPOT.include?(command.name)
+      erreur "Le flux stdin ne peut pas etre utilise pour la commande #{command.name}." if depot == '-'
+    end
+
+    ENTREPOT.ouvrir(depot, BD)
+
     true
   end
+
+  post do |_global_options,_command,_options,_args|
+    ENTREPOT.fermer
+  end
 end
+
+# Tests de Olivier
+# App.run(['init', '-d'])
+# ARGV = ['ajouter', 'CAD', 'USD:1.2345', 'EUR:2.3456']
 
 exit App.run(ARGV)

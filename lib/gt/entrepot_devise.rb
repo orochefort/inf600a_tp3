@@ -58,9 +58,8 @@ module GestionTaux
     # @ensure Un taux a ete ajoute dans dans le depot si les
     #         conditions decrites dans Devise.new etaient satisfaites
     #
-    def self.ajouter(a_nom, a_devises_conversion)
-        puts "#{a_nom} - #{a_devises_conversion}"
-        @les_taux << Devise.new(a_nom, a_devises_conversion)
+    def self.ajouter(a_nom, *a_devises_conversion)
+      @les_taux << Devise.new(a_nom, *a_devises_conversion)
     end
 
     # Supprime un taux du depot.

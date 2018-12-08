@@ -10,11 +10,10 @@ spec = Gem::Specification.new do |s|
   s.summary = 'A description of your project'
   s.files = `git ls-files`.split("\n")
   s.require_paths << 'lib'
-  #s.extra_rdoc_files = ['README.rdoc','taux.rdoc']
-  s.rdoc_options << '--title' << 'taux' << '--main' << 'README.rdoc' << '-ri'
   s.bindir = 'bin'
   s.executables << 'gt'
 
+  s.add_development_dependency('dbc')
   s.add_development_dependency('rake')
   s.add_development_dependency('rdoc')
   s.add_development_dependency('aruba')

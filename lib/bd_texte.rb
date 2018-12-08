@@ -8,9 +8,7 @@
 # Composant completement independant des vins, donc n'a pas ete mis
 # dans le module GestionVins.
 #
-
 class BDTexte
-
   # Methode pour injection des dependances.
   #
   # C'est par l'intermediaire de cette methode que les attributs
@@ -27,17 +25,17 @@ class BDTexte
   #          && les instances repondent au message "to_<<format>>"
   # @require separateur <=> format == :csv
   #
-  def self.config( format,
-                   klass,
-                   exception_a_signaler: RuntimeError,
-                   separateur: nil )
+  def self.config(format,
+                  klass,
+                  exception_a_signaler: RuntimeError,
+                  separateur: nil)
     DBC.require(klass.instance_methods.include?("to_#{format}".to_sym) &&
                 klass.respond_to?("new_from_#{format}".to_sym),
-                "#{self}.config: classe inappropriee: #{klass}: #{klass.methods + klass.instance_methods}" )
-    DBC.require( separateur.nil? || format == :csv,
-                 "#{self}.config: le separateur ne doit etre specifie que pour le format :csv" )
-    DBC.require( separateur.nil? || separateur.size == 1,
-                 "#{self}.config: le separateur doit etre un unique caractere: #{separateur}" )
+                "#{self}.config: classe inappropriee: #{klass}: #{klass.methods + klass.instance_methods}")
+    DBC.require(separateur.nil? || format == :csv,
+                "#{self}.config: le separateur ne doit etre specifie que pour le format :csv")
+    DBC.require(separateur.nil? || separateur.size == 1,
+                "#{self}.config: le separateur doit etre un unique caractere: #{separateur}")
 
     @klass = klass
     @format = format
@@ -56,13 +54,13 @@ class BDTexte
   #
   # @raise [::GestionVins::Exception] si le fichier existe sans qu'on specifie l'option --detruire
   #
-  def self.init( depot, detruire: false )
+  def self.init(depot, detruire: false)
     if File.exist? depot
       if detruire
         FileUtils.rm_f depot # On detruit le depot existant si --detruire est specifie.
       else
-        fail @exception, "#{self}.init: le fichier '#{depot}' existe.
-               Si vous voulez le detruire, utilisez 'init --detruire'."
+        raise @exception, "#{self}.init: le fichier '#{depot}' existe.
+               Si vous voulez le detruire, utilisez 'init [-d, --detruire]'."
       end
     end
     FileUtils.touch depot
@@ -77,17 +75,17 @@ class BDTexte
   #
   # @raise [::GestionVins::Exception] si le fichier n'existe pas
   #
-  def self.charger( depot )
-    fail @exception, "#{self}.charger: le fichier '#{depot}' n'existe pas!" unless depot == '-' || File.exist?(depot)
+  def self.charger(depot)
+    raise @exception, "#{self}.charger: le fichier '#{depot}' n'existe pas!" unless depot == '-' || File.exist?(depot)
 
     new_from_format = "new_from_#{@format}".to_sym
 
     (depot == '-' ? STDIN.readlines : IO.readlines(depot))
       .map do |ligne|
       if @separateur
-        @klass.send( new_from_format, ligne, @separateur )
+        @klass.send(new_from_format, ligne, @separateur)
       else
-        @klass.send( new_from_format, ligne )
+        @klass.send(new_from_format, ligne)
       end
     end
   end
@@ -103,15 +101,15 @@ class BDTexte
   # @ensure Un fichier existe contenant la collection de elements et une
   #         copie de sauvegarde du fichier a ete faite.
   #
-  def self.sauver( depot, les_elements )
+  def self.sauver(depot, les_elements)
     FileUtils.cp depot, "#{depot}.bak" # Copie de sauvegarde.
 
     to_format = "to_#{@format}".to_sym
     arguments = @separateur ? [@separateur] : []
 
-    File.open( depot, "w" ) do |fich|
+    File.open(depot, 'w') do |fich|
       les_elements.each do |v|
-        fich.puts v.send( to_format, *arguments )
+        fich.puts v.send(to_format, *arguments)
       end
     end
   end

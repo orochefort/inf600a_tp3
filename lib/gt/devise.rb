@@ -1,4 +1,4 @@
-require_relative 'motifs'
+    require_relative 'motifs'
 
 # Classe representant une devise et ses differentes devises de conversion.
 #

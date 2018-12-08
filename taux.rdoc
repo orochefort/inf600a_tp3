@@ -1,5 +1,1 @@
-= taux
-
-Generate this with
-    taux _doc
-After you have described your command line interface
+taux _doc

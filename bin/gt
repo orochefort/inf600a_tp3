@@ -1,14 +1,17 @@
 #!/usr/bin/env ruby
 require 'gli'
+require 'fileutils'
+#require '../lib/bd_texte'
+#require '../lib/taux/version'
 begin # XXX: Remove this begin/rescue before distributing your app
-require 'taux'
+ # require 'taux'
+  require 'gt'
 rescue LoadError
   STDERR.puts "In development, you need to use `bundle exec bin/taux` to run your app"
   STDERR.puts "At install-time, RubyGems will make sure lib, etc. are in the load path"
   STDERR.puts "Feel free to remove this message from bin/taux now"
   exit 64
 end
-
 # Des alias, pour alleger le code.
 GT = GestionTaux
 ENTREPOT = GestionTaux::EntrepotDevises
@@ -26,12 +29,12 @@ BD.config(FORMAT_BD_TEXTE, GestionTaux::Devise,
           separateur: SEPARATEUR_BD_TEXTE,
           exception_a_signaler: GestionTaux::Exception)
 
-class App
+#class App
   extend GLI::App
 
   program_desc 'Describe your application here'
 
-  version Taux::VERSION
+  version GT::VERSION
 
   subcommand_option_handling :normal
   arguments :strict
@@ -51,6 +54,9 @@ class App
     c.switch [:a,:append], :negatable => false
 
     c.action do |global_options,options,args|
+      dev = new Devise()
+      dev = dev.new_de_csv("CAD;USD:0.75364;EUR:0.66268;GBP:0.58735")
+      puts dev
 
       # Your command logic here
 
@@ -81,6 +87,6 @@ class App
     # return false to skip default error handling
     true
   end
-end
+#end
 
 exit App.run(ARGV)

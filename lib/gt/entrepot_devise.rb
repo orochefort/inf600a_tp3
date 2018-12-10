@@ -62,6 +62,17 @@ module GestionTaux
       @les_taux << Devise.new(a_nom, *a_devises_conversion)
     end
 
+    def self.lister()
+      f = File.open("#@depot", "r")
+      r_les_noms=%r{^[A-Z]{3}}      
+
+      f.each_line do |line|
+        /#{r_les_noms}/.match line            
+        Devise.les_noms << $&
+      end
+      puts Devise.les_noms 
+    end
+
     # Supprime un taux du depot.
     #
     # @param [Devise] a_devise La devise a supprimer.

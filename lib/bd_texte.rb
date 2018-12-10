@@ -8,6 +8,9 @@
 # Composant completement independant des vins, donc n'a pas ete mis
 # dans le module GestionVins.
 #
+
+require 'gt/devise'
+
 class BDTexte
   # Methode pour injection des dependances.
   #
@@ -36,7 +39,8 @@ class BDTexte
                 "#{self}.config: le separateur ne doit etre specifie que pour le format :csv")
     DBC.require(separateur.nil? || separateur.size == 1,
                 "#{self}.config: le separateur doit etre un unique caractere: #{separateur}")
-
+    
+    
     @klass = klass
     @format = format
     @exception = exception_a_signaler
@@ -77,17 +81,20 @@ class BDTexte
   #
   def self.charger(depot)
     raise @exception, "#{self}.charger: le fichier '#{depot}' n'existe pas!" unless depot == '-' || File.exist?(depot)
-
+    
     new_from_format = "new_from_#{@format}".to_sym
 
     (depot == '-' ? STDIN.readlines : IO.readlines(depot))
       .map do |ligne|
+  
       if @separateur
         @klass.send(new_from_format, ligne, @separateur)
+      
       else
         @klass.send(new_from_format, ligne)
       end
     end
+    
   end
 
   # Sauve sur disque, dans le depot indique, la collection de elements

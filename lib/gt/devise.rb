@@ -7,6 +7,8 @@ module GestionTaux
 # @author Olivier Rochefort
 #
 class Devise
+
+  @@les_noms = []
   READERS = [:nom, :devises_conversion]
   attr_reader(*READERS)
 
@@ -54,7 +56,7 @@ class Devise
   def initialize(a_nom, *a_devises_conversion)
     DBC.require(Motifs::NOM_DEVISE =~ a_nom,
                 'Nom de devise invalide. Le nom doit etre une chaine d\'exactement trois lettres.')
-
+    
     @devises_conversion = []
     a_devises_conversion.each do |dc|
       nom_devise, taux = dc.to_s.scan(Motifs::DEVISE_CONVERSION).flatten
@@ -64,6 +66,11 @@ class Devise
       @devises_conversion << DeviseConversion.new(nom_devise, taux)
     end
     @nom = a_nom.upcase
+    @@les_noms = []
+  end
+
+  def self.les_noms
+    @@les_noms
   end
 
   # Retourne les donnees au format CSV.

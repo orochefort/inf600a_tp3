@@ -60,7 +60,7 @@ class App
   # - Depot invalide (- ne peut pas etre utilise)
   # - Nom de devise invalide
   # =================================
-  desc 'Ajoute une devise et ses differentes devises de conversion au depot'
+  desc 'Ajoute une devise ainsi que ses différentes devises de conversion au dépôt courant'
   arg_name 'devise devise_conversion'
   command :ajouter do |ajouter|
     ajouter.desc 'Si <devise> existe deja dans la bd, ajoute <*devises_conversion> a la liste existante des devises de conversion'
@@ -70,6 +70,26 @@ class App
       devise, *devises_conversion = args
       ENTREPOT.ajouter(devise, *devises_conversion)
     end
+  end
+
+# =================================
+  # Commande lister
+  #
+  # Arguments: [-a|--append] devise
+  #
+  # Erreurs:
+  # - Depot invalide (- ne peut pas etre utilise)
+  # - Nom de devise invalide
+  # =================================
+  desc 'Liste la totalité des devises du dépôt courant'
+  command :lister do |lister|
+    lister.desc ' Pas de paramètre, utilise directement la valeur de @depot pour chercher des devises'
+    lister.switch [:a, :append], negatable: false
+
+    lister.action do |global_options, options|
+      ENTREPOT.lister()
+    end
+    ENTREPOT
   end
 
   # =================================

@@ -108,10 +108,18 @@ class App
   desc 'Liste toutes les devises du depot'
   skips_post
   command :lister do |lister|
+    lister.desc 'Liste les donnees du depot au format brute (raw)'
+    lister.switch [:r, :raw], negatable: false
+
     lister.action do |global_options, options, args|
       erreur_trop_arguments :lister, *args unless args.empty?
 
-      puts ENTREPOT.les_taux.map { |d| d.nom }
+      if options[:raw]
+        to_format = "to_#{FORMAT_BD_TEXTE}".to_sym
+        puts ENTREPOT.les_taux.map { |d| d.send(to_format) }
+      else
+        puts ENTREPOT.les_taux.map { |d| d.nom }
+      end
     end
   end
 

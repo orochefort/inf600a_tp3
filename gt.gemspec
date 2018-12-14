@@ -15,7 +15,6 @@ spec = Gem::Specification.new do |s|
 
   s.add_development_dependency('dbc')
   s.add_development_dependency('rake')
-  s.add_development_dependency('rdoc')
-  s.add_development_dependency('aruba')
+  s.add_development_dependency('minitest', '~> 5')
   s.add_runtime_dependency('gli','2.18.0')
 end

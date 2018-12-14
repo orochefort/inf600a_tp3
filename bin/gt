@@ -58,9 +58,9 @@ class App
   #
   # Erreurs:
   # - Depot invalide (- ne peut pas etre utilise)
-  # - Nom de devise invalide
+  # - Nombre d'arguments incorrect
   # =================================
-  desc 'Ajoute une devise ainsi que ses différentes devises de conversion au dépôt courant'
+  desc 'Ajoute une devise ainsi que ses differentes devises de conversion au depot'
   arg_name 'devise devise_conversion'
   command :ajouter do |ajouter|
     ajouter.desc 'Si <devise> existe deja dans la bd, ajoute <*devises_conversion> a la liste existante des devises de conversion'
@@ -68,28 +68,89 @@ class App
 
     ajouter.action do |global_options, options, args|
       devise, *devises_conversion = args
-      ENTREPOT.ajouter(devise, *devises_conversion)
+      erreur_nombre_incorrect_arguments :ajouter, *args if args.size < 2
+
+      if options[:append]
+        ENTREPOT.ajouter_devises_conversion(devise, *devises_conversion)
+      else
+        ENTREPOT.ajouter(devise, *devises_conversion)
+      end
     end
   end
 
-# =================================
-  # Commande lister
+  # =================================
+  # Commande supprimer
   #
-  # Arguments: [-a|--append] devise
+  # Arguments: devise
   #
   # Erreurs:
   # - Depot invalide (- ne peut pas etre utilise)
-  # - Nom de devise invalide
+  # - Argument(s) en trop
+  # - Devise specifiee non presente dans le depot
   # =================================
-  desc 'Liste la totalité des devises du dépôt courant'
-  command :lister do |lister|
-    lister.desc ' Pas de paramètre, utilise directement la valeur de @depot pour chercher des devises'
-    lister.switch [:a, :append], negatable: false
+  desc 'Supprime une devise (et ses devises de conversion) du depot'
+  arg_name 'devise'
+  command :supprimer do |supprimer|
+    supprimer.action do |global_options, options, args|
+      devise = args.shift
+      erreur_trop_arguments :supprimer, *args unless args.empty?
 
-    lister.action do |global_options, options|
-      ENTREPOT.lister()
+      ENTREPOT.supprimer(a_nom: devise)
     end
-    ENTREPOT
+  end
+
+  # =================================
+  # Commande lister
+  #
+  # Erreurs:
+  # - Arguments en trop
+  # =================================
+  desc 'Liste toutes les devises du depot'
+  skips_post
+  command :lister do |lister|
+    lister.action do |global_options, options, args|
+      erreur_trop_arguments :lister, *args unless args.empty?
+
+      puts ENTREPOT.les_taux.map { |d| d.nom }
+    end
+  end
+
+  # =================================
+  # Commande taux_devise
+  #
+  # Arguments: [--precision] devise devise_conversion
+  #
+  # Erreurs:
+  # - Arguments en trop
+  # - Precision invalide (flag --precision)
+  # - Devise specifiee non presente dans le depot
+  # - Taux non disponible pour la devise de conversion specifiee
+  # =================================
+  desc 'Retourne la valeur d\'une devise par rapport a une autre'
+  arg_name 'devise devise_conversion'
+  skips_post
+  command :taux_devise do |taux_devise|
+    taux_devise.desc 'Nombre de chiffres apres la virgule pour le taux affiche'
+    taux_devise.flag :precision, must_match: /^[0-9]+$/
+
+    taux_devise.action do |global_options, options, args|
+      erreur_nombre_incorrect_arguments(:taux_devise, *args) if args.size != 2
+
+      devise, devise_conversion = args.shift(2)
+      erreur_trop_arguments(:taux_devise, *args) unless args.empty?
+
+      obj_devise = ENTREPOT.selectionner(devise)
+      erreur "Devise '#{devise}' non presente dans le depot" if obj_devise.nil?
+
+      obj_devise_conversion = obj_devise.devise_conversion(devise_conversion)
+      erreur "Taux non disponible pour la devise de conversion '#{devise_conversion}'" if obj_devise_conversion.nil?
+
+      if options[:precision]
+        puts obj_devise_conversion.taux_texte(options[:precision].to_i)
+      else
+        puts obj_devise_conversion.taux_texte
+      end
+    end
   end
 
   # =================================
@@ -111,23 +172,6 @@ class App
     init.action do |global_options, options, _args|
       BD.init(global_options[:depot], detruire: options[:detruire])
     end
-  end
-
-  # ========================================
-  # Methodes pour le traitement des erreurs.
-  # @author Guy Tremblay
-  # ========================================
-
-  def erreur(msg)
-    raise GT::Exception, msg
-  end
-
-  def erreur_trop_arguments(commande, *args)
-    erreur "#{commande}: arguments en trop: #{args.join(' ')}"
-  end
-
-  def erreur_nombre_incorrect_arguments(commande, *args)
-    erreur "#{commande}: nombre incorrect d'arguments: #{args.join(' ')}"
   end
 
   on_error do |exception|
@@ -169,8 +213,21 @@ class App
   end
 end
 
-# Tests de Olivier
-# App.run(['init', '-d'])
-# ARGV = ['ajouter', 'CAD', 'USD:1.2345', 'EUR:2.3456']
+# ========================================
+# Methodes pour le traitement des erreurs.
+# @author Guy Tremblay
+# ========================================
+
+def erreur(msg)
+  raise GT::Exception, msg
+end
+
+def erreur_trop_arguments(commande, *args)
+  erreur "#{commande}: arguments en trop: #{args.join(' ')}"
+end
+
+def erreur_nombre_incorrect_arguments(commande, *args)
+  erreur "#{commande}: nombre incorrect d'arguments: #{args.join(' ')}"
+end
 
 exit App.run(ARGV)

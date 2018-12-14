@@ -14,7 +14,6 @@ module GestionTaux
   # Software', Addison-Wesley, 2004.
   #
   class EntrepotDevises
-
     # Initialise l'entrepot, i.e., charge en memoire la collection de
     # taux specifiee par le depot, et ce a l'aide de la bd indiquee.
     #
@@ -45,7 +44,7 @@ module GestionTaux
       @bd.sauver(@depot, @les_taux)
     end
 
-    # Ajoute un taux dans la collection des taux.
+    # Ajoute une devise dans la collection des taux.
     #
     #
     # @param [String] a_nom Chaine de trois lettres identifiant la devise.
@@ -58,22 +57,33 @@ module GestionTaux
     # @ensure Un taux a ete ajoute dans dans le depot si les
     #         conditions decrites dans Devise.new etaient satisfaites
     #
-    def self.ajouter(a_nom, *a_devises_conversion)
-      @les_taux << Devise.new(a_nom, *a_devises_conversion)
+    def self.ajouter(a_nom_devise, *a_devises_conversion)
+      devise = selectionner(a_nom_devise)
+      raise ::GestionTaux::Exception, "#{self}.ajouter: la devise '#{a_nom_devise}' existe deja" if devise
+
+      @les_taux << Devise.new(a_nom_devise, *a_devises_conversion)
     end
 
-    def self.lister()
-      f = File.open("#@depot", "r")
-      r_les_noms=%r{^[A-Z]{3}}      
+    # Ajoute des devises de conversion a une devise existante.
+    #
+    # @param [String] a_devise Chaine de trois lettres identifiant le nom de la devise existante.
+    # @param [String] *a_devises_conversion Une (ou plusieurs) chaines representant
+    #  les devises de conversion. Chaque chaine de texte doit etre au format
+    #  <nom devise>:<taux> (ex : USD:1.32901).
+    #
+    # @return [void]
+    #
+    # @ensure Un taux a ete ajoute dans dans le depot si les
+    #         conditions decrites dans Devise.new etaient satisfaites
+    #
+    def self.ajouter_devises_conversion(a_nom_devise, *a_devises_conversion)
+      devise = selectionner(a_nom_devise)
+      raise ::GestionTaux::Exception, "#{self}.ajouter_devise_conversion: la devise '#{a_nom_devise}' n'existe pas" unless devise
 
-      f.each_line do |line|
-        /#{r_les_noms}/.match line            
-        Devise.les_noms << $&
-      end
-      puts Devise.les_noms 
+      devise.ajouter_devises_conversion(*a_devises_conversion)
     end
 
-    # Supprime un taux du depot.
+    # Supprime une devise du depot.
     #
     # @param [Devise] a_devise La devise a supprimer.
     # @param [String] a_nom Chaine de trois lettres identifiant la devise pour
@@ -92,27 +102,29 @@ module GestionTaux
                   "#{self}.supprimer: Il faut indiquer un seul argument.")
 
       if a_nom
-        #todo
         devise = GT::EntrepotDevises.selectionner(a_nom)
-        fail ::GestionTaux::Exception, "#{self}.supprimer:  #{numero} n'existe pas" unless vin
+        raise ::GestionTaux::Exception, "#{self}.supprimer: La devise '#{a_nom}' n'existe pas" unless devise
       end
 
-      fail ::GestionVins::Exception, "#{self}.supprimer: le vin numero #{numero} est deja note" if vin.note?
+      supprime = @les_taux.delete(devise)
 
-      supprime = @les_taux.delete(vin)
-
-      DBC.assert supprime, "#{self}.supprimer: le vin #{vin} n'existait pas dans #{self}"
+      DBC.assert supprime, "#{self}.supprimer: La devise '#{a_nom}' n'existait pas dans #{self}"
     end
 
+    # @return [Array<Devise>] Tous les taux dans la collection
+    #
+    def self.les_taux
+      @les_taux
+    end
 
-    # Retourne le vin avec le numero indique.
+    # Retourne la devise portant le nom specifie.
     #
-    # @param [Integer] numero
+    # @param [String] a_nom Chaine de trois lettres identifiant la devise.
     #
-    # @return [Vin] le vin avec le numero indique
+    # @return [Devise] La devise portant le nom indique
     #
-    def self.le_vin(numero)
-      @les_taux.find { |v| v.numero == numero }
+    def self.selectionner(a_nom)
+      @les_taux.find { |d| d.nom == a_nom }
     end
   end
 end

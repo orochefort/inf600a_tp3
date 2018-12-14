@@ -26,6 +26,24 @@ class DeviseConversion
     @taux = a_taux
   end
 
+  # Retourne une version texte du taux avec un nombre precis de chiffres apres
+  # la virgule
+  #
+  # @param [Integer] a_precision Nombre de chiffres apres la virgule. Si non
+  #   specifie, la valeur par defaut sera de 5.
+  #
+  # @ensure La precision doit etre un entier >= 1.
+  #
+  # @return [String] Version texte du taux avec le nombre de chiffres specifie
+  #   apres la virgule.
+  #
+  def taux_texte(a_precision = 5)
+    DBC.require(a_precision.is_a?(Integer) && a_precision >= 1,
+                "La valeur de precision '#{a_precision}' n'est pas un nombre entier >= 1.")
+
+    format("%#.#{a_precision}f", @taux)
+  end
+
   # Retourne les donnees au format CSV.
   #
   # @author Olivier Rochefort

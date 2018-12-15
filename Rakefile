@@ -1,25 +1,22 @@
 # @author Guy Tremblay, Olivier Rochefort
 #
-#-*- ruby -*- # Pour etre en mode Ruby dans emacs
-#
 require 'rake/clean'
 require 'rubygems'
 require 'rake/testtask'
 
 # ---------- Parametres generaux
 
-UTILISE_WINDOWS = !!((RUBY_PLATFORM =~ /(win|w)(32|64)$/) || (RUBY_PLATFORM=~ /mswin|mingw/))
+UTILISE_WINDOWS = !!((RUBY_PLATFORM =~ /(win|w)(32|64)$/) || (RUBY_PLATFORM =~ /mswin|mingw/))
 
 # Pour lancer l'execution d'un exemple.
 GT = UTILISE_WINDOWS ? 'bundle exec ruby bin\\gt' : 'bundle exec bin/gt'
 
 # Unite a executer ou a tester par defaut.
 task :default => :exemples
+task :all => [:test_acceptation]
 #task :default => :all
 
-# Les differentes classes et commandes pour lesquelles on a des tests:
-# classes => tests unitaires, commandes => tests d'acceptation.
-CLASSES   = [:vin, :motifs,:'bd-texte']
+# Les differents exemples et tests d'acceptation.
 COMMANDES = [:init, :lister, :ajouter, :supprimer, :taux_devise]
 
 # ---------- Methodes auxiliaires
@@ -86,11 +83,8 @@ end
 
 #############################################################################
 
-task :all => [:test, :test_acceptation]
-
 # On definit des cibles distinctes pour les tests unitaires des
 # classes et les tests d'acceptation des commandes.
-CLASSES.each   { |cmd| test_task cmd, :unitaire }
 COMMANDES.each { |cmd| test_task cmd, :acceptation }
 
 #############################################################################

@@ -102,6 +102,8 @@ class App
   # =================================
   # Commande lister
   #
+  # Arguments: [-r|--raw]
+  #
   # Erreurs:
   # - Arguments en trop
   # =================================
@@ -170,7 +172,7 @@ class App
   #  - Le depot existe deja et l'option --detruire n'a pas ete indiquee
   #  - Argument(s) en trop
   # =================================
-  desc "Cree une nouvelle base de donnees pour gerer des taux (dans './#{DEPOT_DEFAUT}' si --depot n'est pas specifie)"
+  desc "Cree une nouvelle base de donnees (vide) pour gerer des taux (dans './#{DEPOT_DEFAUT}' si --depot n'est pas specifie)"
   skips_pre
   skips_post
   command :init do |init|

@@ -59,6 +59,8 @@ class App
   # Erreurs:
   # - Depot invalide (- ne peut pas etre utilise)
   # - Nombre d'arguments incorrect
+  # - Format du nom de devise invalide
+  # - Format de devise de conversion invalide
   # =================================
   desc 'Ajoute une devise ainsi que ses differentes devises de conversion au depot'
   arg_name 'devise devise_conversion'
@@ -69,6 +71,17 @@ class App
     ajouter.action do |global_options, options, args|
       devise, *devises_conversion = args
       erreur_nombre_incorrect_arguments :ajouter, *args if args.size < 2
+
+      erreur "Nom de devise '#{devise}' invalide. Le nom doit etre une chaine d\'exactement trois lettres." unless (/^#{Motifs::NOM_DEVISE}$/ =~ devise)
+
+      devises_conversion.each do |dc|
+        nom_devise, taux = dc.to_s.scan(/^#{Motifs::DEVISE_CONVERSION}$/).flatten
+        if nom_devise.nil? && taux.nil?
+          erreur "Devise de conversion '#{dc}' invalide. Le format doit etre <nom devise>:<taux> (ex : USD:1.32901).\n" \
+                "Le nom doit etre une chaine d\'exactement trois lettres.\n" \
+                "Le taux doit etre un nombre decimal avec au moins un chiffre apres le point."
+        end
+      end
 
       if options[:append]
         ENTREPOT.ajouter_devises_conversion(devise, *devises_conversion)
@@ -190,7 +203,7 @@ class App
       STDERR.puts "*** Erreur: arguments en trop: #{ARGV.join(' ')}"
     when GLI::UnknownCommandArgument
       STDERR.puts "*** Erreur: argument ou option de commande invalide: #{ARGV.join(' ')}"
-    when GT::Exception
+    when GT::Exception || DBC::Failure
       STDERR.puts "*** Erreur: #{exception.message}"
     else
       STDERR.puts "*** Oops! Exception signalee durant l'execution de #{$PROGRAM_NAME} ***"

@@ -32,9 +32,9 @@ module GestionTaux
     #
     def ajouter_devises_conversion(*a_devises_conversion)
       a_devises_conversion.each do |dc|
-        nom_devise, taux = dc.to_s.scan(Motifs::DEVISE_CONVERSION).flatten
+        nom_devise, taux = dc.to_s.scan(/^#{Motifs::DEVISE_CONVERSION}$/).flatten
         DBC.require(nom_devise && taux,
-                    'Devise de conversion invalide. Le format doit etre <nom devise>:<taux> (ex : USD:1.32901).')
+                    "Devise de conversion '#{dc}' invalide. Le format doit etre <nom devise>:<taux> (ex : USD:1.32901).")
 
         @devises_conversion << DeviseConversion.new(nom_devise, taux)
       end

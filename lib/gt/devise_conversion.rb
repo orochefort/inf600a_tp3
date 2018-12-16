@@ -17,10 +17,10 @@ class DeviseConversion
   # @param [Float] a_taux Taux de conversion.
   #
   def initialize(a_nom, a_taux)
-    DBC.require(Motifs::NOM_DEVISE =~ a_nom,
-                'Nom de devise de conversion invalide. Le nom doit etre une chaine d\'exactement trois lettres.')
+    DBC.require(/^#{Motifs::NOM_DEVISE}$/ =~ a_nom,
+                "Nom de devise de conversion '#{a_nom}' invalide. Le nom doit etre une chaine d\'exactement trois lettres.")
     DBC.require(/^#{Motifs::TAUX}$/ =~ a_taux.to_s,
-                "Taux ('#{a_taux}') invalide. Le taux doit etre un nombre decimal positif.")
+                "Taux '#{a_taux}' invalide. Le taux doit etre un nombre decimal avec au moins un chiffre apres le point.")
 
     @nom = a_nom.upcase
     @taux = a_taux
